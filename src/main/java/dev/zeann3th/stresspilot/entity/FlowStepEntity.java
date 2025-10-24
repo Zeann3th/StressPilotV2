@@ -1,11 +1,15 @@
 package dev.zeann3th.stresspilot.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
 @Table(name = "flow_steps")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class FlowStepEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,7 +19,7 @@ public class FlowStepEntity extends BaseEntity {
     @Column(name = "flow_id", nullable = false)
     private Long flowId;
 
-    @Column(name = "type", nullable = false)
+    @Column(name = "type", columnDefinition = "VARCHAR(10)", nullable = false)
     private String type;
 
     @Column(name = "endpoint_id")

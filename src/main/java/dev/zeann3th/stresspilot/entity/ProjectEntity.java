@@ -1,11 +1,15 @@
 package dev.zeann3th.stresspilot.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
 @Table(name = "projects")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ProjectEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,6 +19,6 @@ public class ProjectEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 }

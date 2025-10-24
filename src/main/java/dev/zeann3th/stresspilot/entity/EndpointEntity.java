@@ -1,11 +1,15 @@
 package dev.zeann3th.stresspilot.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
 @Table(name = "endpoints")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class EndpointEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -15,10 +19,10 @@ public class EndpointEntity extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
 
-    @Column(name = "description")
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "method", nullable = false)
+    @Column(name = "method", columnDefinition = "VARCHAR(10)", nullable = false)
     private String method;
 
     @Column(name = "url", nullable = false)

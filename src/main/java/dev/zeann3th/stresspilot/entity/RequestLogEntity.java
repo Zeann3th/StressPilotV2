@@ -1,11 +1,15 @@
 package dev.zeann3th.stresspilot.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
+@EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
 @Table(name = "request_logs")
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RequestLogEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

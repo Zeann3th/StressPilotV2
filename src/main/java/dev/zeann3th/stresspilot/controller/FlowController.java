@@ -2,6 +2,7 @@ package dev.zeann3th.stresspilot.controller;
 
 import dev.zeann3th.stresspilot.dto.flow.FlowCreateRequest;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;
+import dev.zeann3th.stresspilot.dto.flow.FlowStepDTO;
 import dev.zeann3th.stresspilot.service.FlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +14,12 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/flows")
+@SuppressWarnings("unused")
 @RequiredArgsConstructor
 public class FlowController {
     private final FlowService flowService;
@@ -38,6 +41,11 @@ public class FlowController {
     @PostMapping
     public ResponseEntity<FlowResponseDTO> createFlow(@Valid @RequestBody FlowCreateRequest flowDTO) {
         return flowService.createFlow(flowDTO);
+    }
+
+    @PostMapping("/{flowId}/configuration")
+    public ResponseEntity<List<FlowStepDTO>> configureFlow(@PathVariable("flowId") Long flowId, @RequestBody List<FlowStepDTO> steps) {
+        return flowService.configureFlow(flowId, steps);
     }
 
     @DeleteMapping("/{flowId}")

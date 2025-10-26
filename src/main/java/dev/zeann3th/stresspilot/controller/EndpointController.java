@@ -16,6 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/endpoints")
+@SuppressWarnings("unused")
 @RequiredArgsConstructor
 public class EndpointController {
     private final EndpointService endpointService;

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/projects")
+@SuppressWarnings("unused")
 @RequiredArgsConstructor
 public class ProjectController {
     private final ProjectService projectService;

@@ -1,5 +1,6 @@
 package dev.zeann3th.stresspilot.service.parser.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
@@ -13,6 +14,7 @@ import java.util.*;
 
 @Component
 @RequiredArgsConstructor
+@SuppressWarnings("unused")
 public class PostmanParser implements ParserService {
 
     private final ObjectMapper objectMapper;
@@ -70,7 +72,7 @@ public class PostmanParser implements ParserService {
             try {
                 String rawBody = request.path("body").path("raw").asText();
                 if (!rawBody.isEmpty()) {
-                    body = objectMapper.readValue(rawBody, Map.class);
+                    body = objectMapper.readValue(rawBody, new TypeReference<>() {});
                 }
             } catch (Exception ignored) {
                 // no-op

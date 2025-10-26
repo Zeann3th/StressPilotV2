@@ -5,18 +5,19 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
+import java.util.Map;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FlowNodeDTO {
+public class FlowStepDTO {
     private String id;
     private String type;
     private Long endpointId;
-    private String preProcessor;
-    private String postProcessor;
-    private String next;
-    private List<FlowConditionDTO> conditions;
+    private Map<String, Object> preProcessor;
+    private Map<String, Object> postProcessor;
+    private String nextIfTrue;
+    private String nextIfFalse;
+    private String condition;
 }

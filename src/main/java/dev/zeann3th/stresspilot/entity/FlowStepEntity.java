@@ -12,8 +12,7 @@ import lombok.*;
 @Builder
 public class FlowStepEntity extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id")
+    @Column(name = "id", columnDefinition = "VARCHAR(36)")
     private String id;
 
     @Column(name = "flow_id", nullable = false)
@@ -31,8 +30,11 @@ public class FlowStepEntity extends BaseEntity {
     @Column(name = "post_processor", columnDefinition = "TEXT")
     private String postProcessor;
 
-    @Column(name = "next")
-    private String next;
+    @Column(name = "next_if_true")
+    private String nextIfTrue;
+
+    @Column(name = "next_if_false")
+    private String nextIfFalse;
 
     @Column(name = "condition", columnDefinition = "TEXT")
     private String condition;

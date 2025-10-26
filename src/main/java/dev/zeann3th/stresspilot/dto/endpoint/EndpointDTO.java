@@ -1,20 +1,23 @@
-package dev.zeann3th.stresspilot.dto.project;
+package dev.zeann3th.stresspilot.dto.endpoint;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProjectDTO {
+public class EndpointDTO {
     private Long id;
     private String name;
     private String description;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
+    private String method;
+    private String url;
+    private String headers;
+    private String body;
+    private String parameters;
+    private Long projectId;
 }
+

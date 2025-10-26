@@ -1,20 +1,18 @@
 package dev.zeann3th.stresspilot.dto.project;
 
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class GetProjectDetailDTO {
-    private Long id;
+public class ProjectRequestDTO {
+    @NotBlank(message = "Project name must not be blank")
     private String name;
+
     private String description;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }

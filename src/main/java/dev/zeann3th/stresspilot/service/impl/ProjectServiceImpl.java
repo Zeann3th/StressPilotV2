@@ -1,8 +1,9 @@
 package dev.zeann3th.stresspilot.service.impl;
 
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
+import dev.zeann3th.stresspilot.common.mappers.ProjectMapper;
+import dev.zeann3th.stresspilot.dto.project.ProjectRequestDTO;
 import dev.zeann3th.stresspilot.dto.project.ProjectDTO;
-import dev.zeann3th.stresspilot.dto.project.GetProjectDetailDTO;
 import dev.zeann3th.stresspilot.entity.ProjectEntity;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.repository.ProjectRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
@@ -21,67 +23,50 @@ import java.util.Optional;
 @Slf4j
 public class ProjectServiceImpl implements ProjectService {
     private final ProjectRepository projectRepository;
+    private final ProjectMapper projectMapper;
 
     @Override
-    public ResponseEntity<Page<GetProjectDetailDTO>> getListProject(String name, Pageable pageable) {
-        try {
+    public ResponseEntity<Page<ProjectDTO>> getListProject(String name, Pageable pageable) {
             Page<ProjectEntity> projectPage = projectRepository.findAllByCondition(name, pageable);
-
-            Page<GetProjectDetailDTO> dtoPage = projectPage.map(project -> {
-                String description = project.getDescription();
-                if (description != null && description.length() > 100) {
-                    description = description.substring(0, 100) + "...";
-                }
-                return GetProjectDetailDTO.builder()
-                        .id(project.getId())
-                        .name(project.getName())
-                        .description(description)
-                        .createdAt(project.getCreatedAt())
-                        .updatedAt(project.getUpdatedAt())
-                        .build();
-            });
-            return ResponseEntity.ok(dtoPage);
-        } catch (Exception e) {
-            log.error("Error fetching project list", e);
-            throw CommandExceptionBuilder.exception(ErrorCode.SYSTEM_BUSY);
-        }
+            return ResponseEntity.ok(projectPage.map(projectMapper::toDTO));
     }
 
     @Override
-    public ResponseEntity<ProjectEntity> getProjectDetail(Long projectId) {
+    public ResponseEntity<ProjectDTO> getProjectDetail(Long projectId) {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.PROJECT_NOT_FOUND));
-
-        return ResponseEntity.ok(project);
+        return ResponseEntity.ok(projectMapper.toDTO(project));
     }
 
     @Override
-    public ResponseEntity<ProjectEntity> createProject(ProjectDTO projectDTO) {
+    public ResponseEntity<ProjectDTO> createProject(ProjectRequestDTO projectRequestDTO) {
         ProjectEntity project = ProjectEntity.builder()
-                .name(projectDTO.getName())
-                .description(projectDTO.getDescription())
+                .name(projectRequestDTO.getName())
+                .description(projectRequestDTO.getDescription())
                 .build();
-        projectRepository.save(project);
-        return ResponseEntity.ok(project);
+        ProjectEntity saved = projectRepository.save(project);
+        return ResponseEntity.status(HttpStatus.CREATED).body(projectMapper.toDTO(saved));
     }
 
     @Override
-    public ResponseEntity<ProjectEntity> updateProject(Long projectId, ProjectDTO projectDTO) {
+    public ResponseEntity<ProjectDTO> updateProject(Long projectId, ProjectRequestDTO projectRequestDTO) {
         ProjectEntity project = projectRepository.findById(projectId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.PROJECT_NOT_FOUND));
 
-        Optional.ofNullable(projectDTO.getName()).ifPresent(project::setName);
-        Optional.ofNullable(projectDTO.getDescription()).ifPresent(project::setDescription);
-        projectRepository.save(project);
+        Optional.ofNullable(projectRequestDTO.getName()).ifPresent(project::setName);
+        Optional.ofNullable(projectRequestDTO.getDescription()).ifPresent(project::setDescription);
+        ProjectEntity saved = projectRepository.save(project);
 
-        return ResponseEntity.ok(project);
+        return ResponseEntity.ok(projectMapper.toDTO(saved));
     }
 
     @Override
     public ResponseEntity<Void> deleteProject(Long projectId) {
-        ProjectEntity project = projectRepository.findById(projectId)
-                .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.PROJECT_NOT_FOUND));
-        projectRepository.delete(project);
+        boolean exists = projectRepository.existsById(projectId);
+        if (!exists) {
+            throw CommandExceptionBuilder.exception(ErrorCode.PROJECT_NOT_FOUND);
+        }
+        projectRepository.deleteById(projectId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -6,22 +6,16 @@ import lombok.*;
 @EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
-@Table(name = "flows")
+@Table(name = "environments")
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FlowEntity extends BaseEntity {
+public class EnvironmentEntity extends BaseEntity{
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "project_id", nullable = false)
-    private Long projectId;
 
     @Column(name = "name", nullable = false)
     private String name;
-
-    @Column(name = "description", columnDefinition = "TEXT")
-    private String description;
 }

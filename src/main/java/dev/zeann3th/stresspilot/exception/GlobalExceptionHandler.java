@@ -2,36 +2,51 @@ package dev.zeann3th.stresspilot.exception;
 
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
 import dev.zeann3th.stresspilot.dto.ErrorResponse;
-import org.springframework.http.HttpStatus;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import java.util.stream.Collectors;
+
+@Slf4j
 @ControllerAdvice
 @SuppressWarnings("all")
 public class GlobalExceptionHandler {
+
     @ExceptionHandler(CommandException.class)
     public ResponseEntity<Object> handleCommandException(CommandException ex) {
-        ErrorCode code = ex.getErrorCode();
+        ErrorCode error = ex.getErrorCode();
         ErrorResponse response = ErrorResponse.builder()
-                .code(code.getCode())
-                .message(code.getMessage())
+                .status(error.getStatus().value())
+                .message(error.getMessage())
+                .params(ex.getParams())
                 .build();
-        return ResponseEntity.status(resolveHttpStatus(code)).body(response);
+        return ResponseEntity.status(error.getStatus()).body(response);
     }
 
-    private HttpStatus resolveHttpStatus(ErrorCode code) {
-        if (code.getCode() / 10000 == 4) return HttpStatus.BAD_REQUEST;
-        if (code.getCode() / 10000 == 5) return HttpStatus.INTERNAL_SERVER_ERROR;
-        return HttpStatus.OK;
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<Object> handleValidationException(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+                .map(err -> err.getField() + ": " + err.getDefaultMessage())
+                .collect(Collectors.joining("; "));
+
+        ErrorResponse response = ErrorResponse.builder()
+                .status(400)
+                .message(message)
+                .build();
+
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleException(Exception ex) {
+    public ResponseEntity<Object> handleUnhandledException(Exception ex) {
+        log.error("Unhandled exception occurred", ex);
         ErrorResponse response = ErrorResponse.builder()
-                .code(ErrorCode.SYSTEM_BUSY.getCode())
+                .status(ErrorCode.SYSTEM_BUSY.getStatus().value())
                 .message(ErrorCode.SYSTEM_BUSY.getMessage())
                 .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity.status(ErrorCode.SYSTEM_BUSY.getStatus()).body(response);
     }
 }

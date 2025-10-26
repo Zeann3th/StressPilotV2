@@ -45,7 +45,7 @@ public class DataSourceConfig {
 
             if (!dbExists) {
                 try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
-                    // do smt
+                    stmt.execute("PRAGMA journal_mode = WAL;");
                 }
             }
 

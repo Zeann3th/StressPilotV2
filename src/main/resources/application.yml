@@ -1,6 +1,14 @@
+server:
+  address: 127.0.0.1
+  port: 9760
+
 spring:
   application:
     name: stresspilot
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 10MB
 
   jpa:
     database-platform: org.hibernate.community.dialect.SQLiteDialect
@@ -10,3 +18,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  jackson:
+    default-property-inclusion: non_null
+
+application:
+  cors:
+    allowed-origins:
+      - "localhost:3000"

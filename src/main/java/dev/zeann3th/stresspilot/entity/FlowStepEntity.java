@@ -14,7 +14,7 @@ public class FlowStepEntity extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private Long id;
+    private String id;
 
     @Column(name = "flow_id", nullable = false)
     private Long flowId;
@@ -31,9 +31,9 @@ public class FlowStepEntity extends BaseEntity {
     @Column(name = "post_processor", columnDefinition = "TEXT")
     private String postProcessor;
 
-    @Column(name = "next_step_if_true")
-    private Long nextStepIfTrue;
+    @Column(name = "next")
+    private String next;
 
-    @Column(name = "next_step_if_false")
-    private Long nextStepIfFalse;
+    @Column(name = "condition", columnDefinition = "TEXT")
+    private String condition;
 }

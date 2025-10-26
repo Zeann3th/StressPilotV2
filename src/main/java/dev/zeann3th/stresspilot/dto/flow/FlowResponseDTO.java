@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.dto.project;
+package dev.zeann3th.stresspilot.dto.flow;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -11,8 +11,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ProjectDTO {
+public class FlowResponseDTO {
     private Long id;
+    private Long projectId;
     private String name;
     private String description;
     private LocalDateTime createdAt;

@@ -11,17 +11,10 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
     @Query(
-        value =
-        """
-            SELECT * FROM projects
-            WHERE (:name IS NULL OR LOWER(name) LIKE LOWER(CONCAT('%', :name, '%')))
-        """,
-        countQuery =
-        """
-            SELECT COUNT(*) FROM projects
-            WHERE (:name IS NULL OR LOWER(name) LIKE LOWER(CONCAT('%', :name, '%')))
-        """,
-        nativeQuery = true
+            """
+                SELECT p FROM ProjectEntity p
+                WHERE :name IS NULL OR LOWER(p.name) LIKE LOWER(CONCAT('%', :name, '%'))
+            """
     )
     Page<ProjectEntity> findAllByCondition(@Param("name") String name, Pageable pageable);
 }

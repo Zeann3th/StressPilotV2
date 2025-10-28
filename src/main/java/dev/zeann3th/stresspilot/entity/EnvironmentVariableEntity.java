@@ -1,13 +1,19 @@
 package dev.zeann3th.stresspilot.entity;
 
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import lombok.*;
 
 @EqualsAndHashCode(callSuper = false)
 @Data
 @Entity
-@Table(name = "environment_variables")
+@Table(
+    name = "environment_variables",
+    uniqueConstraints = {
+            @UniqueConstraint(columnNames = {"environment_id", "key"})
+    })
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class EnvironmentVariableEntity extends BaseEntity {
     @Id
     @Column(name = "id")
@@ -20,6 +26,9 @@ public class EnvironmentVariableEntity extends BaseEntity {
     @Column(name = "key", nullable = false)
     private String key;
 
-    @Column(name = "value", nullable = false)
+    @Column(name = "value", columnDefinition = "TEXT")
     private String value;
+
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive;
 }

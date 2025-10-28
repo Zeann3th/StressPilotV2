@@ -17,7 +17,6 @@ import dev.zeann3th.stresspilot.service.parser.ParserServiceFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -36,20 +35,20 @@ public class EndpointServiceImpl implements EndpointService {
     private final ParserServiceFactory parserServiceFactory;
 
     @Override
-    public ResponseEntity<Page<EndpointDTO>> getListEndpoint(Long projectId, String name, Pageable pageable) {
+    public Page<EndpointDTO> getListEndpoint(Long projectId, String name, Pageable pageable) {
         Page<EndpointEntity> entityPage = endpointRepository.findAllByCondition(projectId, name, pageable);
-        return ResponseEntity.ok(entityPage.map(endpointMapper::toListDTO));
+        return entityPage.map(endpointMapper::toListDTO);
     }
 
     @Override
-    public ResponseEntity<EndpointDTO> getEndpointDetail(Long endpointId) {
+    public EndpointDTO getEndpointDetail(Long endpointId) {
         EndpointEntity endpointEntity = endpointRepository.findById(endpointId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.ENDPOINT_NOT_FOUND));
-        return ResponseEntity.ok(endpointMapper.toDetailDTO(endpointEntity));
+        return endpointMapper.toDetailDTO(endpointEntity);
     }
 
     @Override
-    public ResponseEntity<EndpointDTO> updateEndpoint(Long endpointId, Map<String, Object> endpointUpdateRequest) {
+    public EndpointDTO updateEndpoint(Long endpointId, Map<String, Object> endpointUpdateRequest) {
         EndpointEntity endpointEntity = endpointRepository.findById(endpointId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.ENDPOINT_NOT_FOUND));
 
@@ -61,24 +60,23 @@ public class EndpointServiceImpl implements EndpointService {
         try {
             EndpointEntity updatedEntity = objectMapper.updateValue(endpointEntity, sanitized);
             EndpointEntity savedEntity = endpointRepository.save(updatedEntity);
-            return ResponseEntity.ok(endpointMapper.toDetailDTO(savedEntity));
+            return endpointMapper.toDetailDTO(savedEntity);
         } catch (JsonMappingException e) {
             throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Invalid request data"));
         }
     }
 
     @Override
-    public ResponseEntity<Void> deleteEndpoint(Long endpointId) {
+    public void deleteEndpoint(Long endpointId) {
         boolean exists = endpointRepository.existsById(endpointId);
         if (!exists) {
             throw CommandExceptionBuilder.exception(ErrorCode.ENDPOINT_NOT_FOUND);
         }
         endpointRepository.deleteById(endpointId);
-        return ResponseEntity.noContent().build();
     }
 
     @Override
-    public ResponseEntity<Void> uploadEndpoints(MultipartFile file, Long projectId) {
+    public void uploadEndpoints(MultipartFile file, Long projectId) {
         if (file == null || file.isEmpty()) {
             throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
                     Map.of(Constants.REASON, "File is empty or null"));
@@ -121,7 +119,6 @@ public class EndpointServiceImpl implements EndpointService {
             }).toList();
 
             endpointRepository.saveAll(entities);
-            return ResponseEntity.ok().build();
         } catch (Exception e) {
             throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
                     Map.of(Constants.REASON, "Failed to parse or save endpoints: " + e.getMessage()));

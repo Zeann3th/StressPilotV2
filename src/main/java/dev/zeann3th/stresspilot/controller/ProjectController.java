@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,27 +26,32 @@ public class ProjectController {
             @RequestParam(value = "name", required = false) String name,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC)
             Pageable pageable) {
-        return projectService.getListProject(name, pageable);
+        var resp = projectService.getListProject(name, pageable);
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{projectId}")
     ResponseEntity<ProjectDTO> getProjectDetail(@PathVariable("projectId") Long projectId) {
-        return projectService.getProjectDetail(projectId);
+        var resp = projectService.getProjectDetail(projectId);
+        return ResponseEntity.ok(resp);
     }
 
     @PostMapping
     ResponseEntity<ProjectDTO> createProject(@Valid @RequestBody ProjectRequestDTO projectRequestDTO) {
-        return projectService.createProject(projectRequestDTO);
+        var resp = projectService.createProject(projectRequestDTO);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resp);
     }
 
     @PatchMapping("/{projectId}")
     ResponseEntity<ProjectDTO> updateProject(@PathVariable("projectId") Long projectId,
                                                 @RequestBody ProjectRequestDTO projectRequestDTO) {
-        return projectService.updateProject(projectId, projectRequestDTO);
+        var resp = projectService.updateProject(projectId, projectRequestDTO);
+        return ResponseEntity.ok(resp);
     }
 
     @DeleteMapping("/{projectId}")
     ResponseEntity<Void> deleteProject(@PathVariable("projectId") Long projectId) {
-        return projectService.deleteProject(projectId);
+        projectService.deleteProject(projectId);
+        return ResponseEntity.noContent().build();
     }
 }

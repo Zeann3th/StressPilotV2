@@ -15,7 +15,4 @@ public class EnvironmentEntity extends BaseEntity{
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @Column(name = "name", nullable = false)
-    private String name;
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
 @Repository
-public interface FlowStepRepository extends JpaRepository<FlowStepEntity, Long> {
+public interface FlowStepRepository extends JpaRepository<FlowStepEntity, String> {
     @Transactional
     @Modifying
     @Query("DELETE FROM FlowStepEntity fse WHERE fse.flowId = :flowId")

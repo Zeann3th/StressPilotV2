@@ -21,4 +21,7 @@ public class ProjectEntity extends BaseEntity {
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
+
+    @Column(name = "environment_id", nullable = false)
+    private Long environmentId;
 }

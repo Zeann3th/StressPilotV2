@@ -1,19 +1,18 @@
 package dev.zeann3th.stresspilot.service;
 
-import dev.zeann3th.stresspilot.dto.project.ProjectRequestDTO;
 import dev.zeann3th.stresspilot.dto.project.ProjectDTO;
+import dev.zeann3th.stresspilot.dto.project.ProjectRequestDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
 
 public interface ProjectService {
-    ResponseEntity<Page<ProjectDTO>> getListProject(String name, Pageable pageable);
+    Page<ProjectDTO> getListProject(String name, Pageable pageable);
 
-    ResponseEntity<ProjectDTO> getProjectDetail(Long projectId);
+    ProjectDTO getProjectDetail(Long projectId);
 
-    ResponseEntity<ProjectDTO> createProject(ProjectRequestDTO projectRequestDTO);
+    ProjectDTO createProject(ProjectRequestDTO projectRequestDTO);
 
-    ResponseEntity<ProjectDTO> updateProject(Long projectId, ProjectRequestDTO projectRequestDTO);
+    ProjectDTO updateProject(Long projectId, ProjectRequestDTO projectRequestDTO);
 
-    ResponseEntity<Void> deleteProject(Long projectId);
+    void deleteProject(Long projectId);
 }

@@ -27,12 +27,14 @@ public class EndpointController {
             @RequestParam(value = "name", required = false) String name,
             @ParameterObject @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
     ) {
-        return endpointService.getListEndpoint(projectId, name, pageable);
+        var resp = endpointService.getListEndpoint(projectId, name, pageable);
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/{endpointId}")
     public ResponseEntity<EndpointDTO> getEndpointDetail(@PathVariable("endpointId") Long endpointId) {
-        return endpointService.getEndpointDetail(endpointId);
+        var resp = endpointService.getEndpointDetail(endpointId);
+        return ResponseEntity.ok(resp);
     }
 
     @PatchMapping("/{endpointId}")
@@ -40,18 +42,21 @@ public class EndpointController {
             @PathVariable("endpointId") Long endpointId,
             @RequestBody Map<String, Object> endpointDTO
     ) {
-        return endpointService.updateEndpoint(endpointId, endpointDTO);
+        var resp = endpointService.updateEndpoint(endpointId, endpointDTO);
+        return ResponseEntity.ok(resp);
     }
 
     @DeleteMapping("/{endpointId}")
     public ResponseEntity<Void> deleteEndpoint(@PathVariable("endpointId") Long endpointId) {
-        return endpointService.deleteEndpoint(endpointId);
+        endpointService.deleteEndpoint(endpointId);
+        return ResponseEntity.noContent().build();
     }
 
     @PostMapping(value = "/upload", consumes = "multipart/form-data")
     public ResponseEntity<Void> uploadEndpoints(
             @RequestParam("file") MultipartFile file,
             @RequestParam("projectId") Long projectId) {
-        return endpointService.uploadEndpoints(file, projectId);
+        endpointService.uploadEndpoints(file, projectId);
+        return ResponseEntity.noContent().build();
     }
 }

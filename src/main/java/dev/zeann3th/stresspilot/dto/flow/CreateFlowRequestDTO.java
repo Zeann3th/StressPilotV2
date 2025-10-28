@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class FlowCreateRequest {
+public class CreateFlowRequestDTO {
     @NotNull(message = "Project ID must not be blank")
     private Long projectId;
     @NotBlank(message = "Flow name must not be blank")

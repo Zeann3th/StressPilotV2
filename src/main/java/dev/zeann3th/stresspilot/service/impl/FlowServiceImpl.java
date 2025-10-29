@@ -10,6 +10,7 @@ import dev.zeann3th.stresspilot.common.mappers.FlowMapper;
 import dev.zeann3th.stresspilot.dto.flow.CreateFlowRequestDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowStepDTO;
+import dev.zeann3th.stresspilot.dto.flow.RunFlowRequestDTO;
 import dev.zeann3th.stresspilot.entity.FlowEntity;
 import dev.zeann3th.stresspilot.entity.FlowStepEntity;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
@@ -284,5 +285,20 @@ public class FlowServiceImpl implements FlowService {
         visiting.remove(node);
         memo.put(node, false);
         return false;
+    }
+
+    @Override
+    public void runFlow(Long flowId, RunFlowRequestDTO runFlowRequestDTO) {
+        // Check flow exist, then get environment
+        // Merge with variables from request, prioritize request variables if conflict
+        // Get all the steps needed
+        // init loop of users by request threads (cookie jars, own context var), use CompletableFuture to run in parallel
+        // check pre processor, run if any
+        // use EndpointRunner to know how to run each step since having multiple types Http, gRPC, etc.
+        // start from start node then use map to get to next node then call endpoint runner again until no next node
+        // check post processor, run if any
+        // log result to db
+
+        // flow done ? update flow run status, must have another endpoint to do inquiry polling
     }
 }

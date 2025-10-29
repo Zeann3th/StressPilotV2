@@ -3,6 +3,7 @@ package dev.zeann3th.stresspilot.controller;
 import dev.zeann3th.stresspilot.dto.flow.CreateFlowRequestDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowStepDTO;
+import dev.zeann3th.stresspilot.dto.flow.RunFlowRequestDTO;
 import dev.zeann3th.stresspilot.service.FlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -63,5 +64,11 @@ public class FlowController {
     public ResponseEntity<FlowResponseDTO> updateFlow(@PathVariable("flowId") Long flowId, @RequestBody Map<String, Object> flowDTO) {
         var resp = flowService.updateFlow(flowId, flowDTO);
         return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/{flowId}/run")
+    public ResponseEntity<Void> runFlow(@PathVariable("flowId") Long flowId, @RequestBody RunFlowRequestDTO runFlowRequestDTO) {
+        flowService.runFlow(flowId, runFlowRequestDTO);
+        return ResponseEntity.accepted().build();
     }
 }

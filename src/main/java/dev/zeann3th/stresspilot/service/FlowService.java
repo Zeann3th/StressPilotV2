@@ -3,6 +3,7 @@ package dev.zeann3th.stresspilot.service;
 import dev.zeann3th.stresspilot.dto.flow.CreateFlowRequestDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowStepDTO;
+import dev.zeann3th.stresspilot.dto.flow.RunFlowRequestDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -21,4 +22,6 @@ public interface FlowService {
     FlowResponseDTO updateFlow(Long flowId,  Map<String, Object> flowDTO);
 
     List<FlowStepDTO> configureFlow(Long flowId, List<FlowStepDTO> steps);
+
+    void runFlow(Long flowId, RunFlowRequestDTO runFlowRequestDTO);
 }

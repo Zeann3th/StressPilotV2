@@ -16,27 +16,49 @@ public class EndpointEntity extends BaseEntity {
     @Column(name = "id")
     private Long id;
 
+    // Metadata
     @Column(name = "name", nullable = false)
     private String name;
 
     @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(name = "method", columnDefinition = "VARCHAR(10)", nullable = false)
-    private String method;
-
-    @Column(name = "url", nullable = false)
-    private String url;
-
-    @Column(name = "headers", columnDefinition = "TEXT")
-    private String headers;
-
-    @Column(name = "body", columnDefinition = "TEXT")
-    private String body;
-
-    @Column(name = "parameters", columnDefinition = "TEXT")
-    private String parameters;
+    @Column(name = "type", columnDefinition = "VARCHAR(20)", nullable = false)
+    private String type;
 
     @Column(name = "project_id", nullable = false)
     private Long projectId;
+
+    @Column(name = "url")
+    private String url;
+
+    // Http
+    @Column(name = "http_method", columnDefinition = "VARCHAR(10)")
+    private String httpMethod;
+
+    @Column(name = "http_headers", columnDefinition = "TEXT")
+    private String httpHeaders;
+
+    @Column(name = "http_body", columnDefinition = "TEXT")
+    private String httpBody;
+
+    @Column(name = "http_parameters", columnDefinition = "TEXT")
+    private String httpParameters;
+
+    // gRPC
+    @Column(name = "grpc_service_name")
+    private String grpcServiceName;
+
+    @Column(name = "grpc_method_name")
+    private String grpcMethodName;
+
+    @Column(name = "grpc_proto_file", columnDefinition = "TEXT")
+    private String grpcProtoFile;
+
+    // GraphQL
+    @Column(name = "graphql_operation_type", columnDefinition = "VARCHAR(20)")
+    private String graphqlOperationType;
+
+    @Column(name = "graphql_variables", columnDefinition = "TEXT")
+    private String graphqlVariables;
 }

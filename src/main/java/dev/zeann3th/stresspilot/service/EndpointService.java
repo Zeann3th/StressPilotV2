@@ -1,6 +1,7 @@
 package dev.zeann3th.stresspilot.service;
 
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
+import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,4 +18,6 @@ public interface EndpointService {
     void deleteEndpoint(Long endpointId);
 
     void uploadEndpoints(MultipartFile file, Long projectId);
+
+    ExecuteEndpointResponseDTO runEndpoint(Long endpointId, Map<String, Object> variables);
 }

@@ -14,9 +14,21 @@ import java.util.Map;
 public class ParsedEndpointDTO {
     private String name;
     private String description;
-    private String method;
-    private String url;
-    private Map<String, String> headers;
-    private Map<String, Object> body;
-    private Map<String, Object> parameters;
+    private String type;
+
+    // Http
+    private String httpMethod;
+    private String httpUrl;
+    private Map<String, String> httpHeaders;
+    private Map<String, Object> httpBody;
+    private Map<String, Object> httpParameters;
+
+    // gRPC
+    private String grpcServiceName;
+    private String grpcMethodName;
+    private String grpcProtoFile;
+
+    // GraphQL
+    private String graphqlOperationType;
+    private Map<String, Object> graphqlVariables;
 }

@@ -7,16 +7,25 @@ import dev.zeann3th.stresspilot.common.Constants;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
 import dev.zeann3th.stresspilot.common.mappers.EndpointMapper;
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
+import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
 import dev.zeann3th.stresspilot.dto.endpoint.ParsedEndpointDTO;
 import dev.zeann3th.stresspilot.entity.EndpointEntity;
+import dev.zeann3th.stresspilot.entity.EnvironmentVariableEntity;
+import dev.zeann3th.stresspilot.entity.ProjectEntity;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.repository.EndpointRepository;
+import dev.zeann3th.stresspilot.repository.EnvironmentVariableRepository;
+import dev.zeann3th.stresspilot.repository.ProjectRepository;
 import dev.zeann3th.stresspilot.service.EndpointService;
+import dev.zeann3th.stresspilot.service.executor.ExecutorService;
+import dev.zeann3th.stresspilot.service.executor.ExecutorServiceFactory;
 import dev.zeann3th.stresspilot.service.parser.ParserService;
 import dev.zeann3th.stresspilot.service.parser.ParserServiceFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,12 +36,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class EndpointServiceImpl implements EndpointService {
     private final EndpointRepository endpointRepository;
+    private final ProjectRepository projectRepository;
+    private final EnvironmentVariableRepository envVarRepo;
     private final EndpointMapper endpointMapper;
     private final ObjectMapper objectMapper;
     private final ParserServiceFactory parserServiceFactory;
+    private final ExecutorServiceFactory executorServiceFactory;
 
     @Override
     public Page<EndpointDTO> getListEndpoint(Long projectId, String name, Pageable pageable) {
@@ -100,28 +113,80 @@ public class EndpointServiceImpl implements EndpointService {
             String fileContent = new String(file.getBytes(), StandardCharsets.UTF_8);
             List<ParsedEndpointDTO> parsedEndpoints = parser.parse(fileContent);
 
-            List<EndpointEntity> entities = parsedEndpoints.stream().map(pe -> {
-                try {
-                    return EndpointEntity.builder()
-                            .name(pe.getName())
-                            .description(pe.getDescription())
-                            .method(pe.getMethod())
-                            .url(pe.getUrl())
-                            .headers(pe.getHeaders() != null ? objectMapper.writeValueAsString(pe.getHeaders()) : null)
-                            .body(pe.getBody() != null ? objectMapper.writeValueAsString(pe.getBody()) : null)
-                            .parameters(pe.getParameters() != null ? objectMapper.writeValueAsString(pe.getParameters()) : null)
-                            .projectId(projectId)
-                            .build();
-                } catch (JsonProcessingException e) {
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
-                            Map.of(Constants.REASON, "Failed to serialize endpoint data"));
-                }
-            }).toList();
+            List<EndpointEntity> entities = parsedEndpoints.stream()
+                    .map(parsedEndpointDTO -> buildEndpoint(projectId, parsedEndpointDTO))
+                    .toList();
 
             endpointRepository.saveAll(entities);
         } catch (Exception e) {
             throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
                     Map.of(Constants.REASON, "Failed to parse or save endpoints: " + e.getMessage()));
+        }
+    }
+
+    private EndpointEntity buildEndpoint(Long projectId, ParsedEndpointDTO parsedEndpointDTO) {
+        try {
+            return EndpointEntity.builder()
+                    .name(parsedEndpointDTO.getName())
+                    .description(parsedEndpointDTO.getDescription())
+                    .type(parsedEndpointDTO.getType())
+                    // HTTP
+                    .httpMethod(parsedEndpointDTO.getHttpMethod())
+                    .url(parsedEndpointDTO.getHttpUrl())
+                    .httpHeaders(parsedEndpointDTO.getHttpHeaders() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpHeaders()) : null)
+                    .httpBody(parsedEndpointDTO.getHttpBody() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpBody()) : null)
+                    .httpParameters(parsedEndpointDTO.getHttpParameters() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpParameters()) : null)
+                    // gRPC
+                    .grpcServiceName(parsedEndpointDTO.getGrpcServiceName())
+                    .grpcMethodName(parsedEndpointDTO.getGrpcMethodName())
+                    .grpcProtoFile(parsedEndpointDTO.getGrpcProtoFile())
+                    // GraphQL
+                    .graphqlOperationType(parsedEndpointDTO.getGraphqlOperationType())
+                    .graphqlVariables(parsedEndpointDTO.getGraphqlVariables() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getGraphqlVariables()) : null)
+                    .projectId(projectId)
+                    .build();
+        } catch (JsonProcessingException e) {
+            throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                    Map.of(Constants.REASON, "Failed to serialize endpoint data"));
+        }
+    }
+
+    @Override
+    public ExecuteEndpointResponseDTO runEndpoint(Long endpointId, Map<String, Object> variables) {
+        EndpointEntity endpointEntity = endpointRepository.findById(endpointId)
+                .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.ENDPOINT_NOT_FOUND));
+
+        ProjectEntity projectEntity = projectRepository.findById(endpointEntity.getProjectId())
+                .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.PROJECT_NOT_FOUND));
+
+        Map<String, Object> environment = envVarRepo
+                .findAllByEnvironmentIdAndIsActiveTrue(projectEntity.getEnvironmentId())
+                .stream()
+                .collect(Collectors.toMap(
+                        EnvironmentVariableEntity::getKey,
+                        EnvironmentVariableEntity::getValue,
+                        (v1, v2) -> v2
+                ));
+
+        if (variables != null && !variables.isEmpty()) {
+            environment.putAll(variables);
+        }
+
+        ExecutorService executorService = executorServiceFactory.getExecutor(endpointEntity.getType());
+
+        long startTime = System.currentTimeMillis();
+        try {
+            return executorService.execute(endpointEntity, environment);
+        } catch (Exception e) {
+            log.error("Error executing endpoint {}: {}", endpointId, e.getMessage(), e);
+            Map<String, Object> data = Map.of("error", e.getMessage());
+            return ExecuteEndpointResponseDTO.builder()
+                    .responseTimeMs(System.currentTimeMillis() - startTime)
+                    .success(false)
+                    .statusCode(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .data(data)
+                    .rawResponse(data.toString())
+                    .build();
         }
     }
 }

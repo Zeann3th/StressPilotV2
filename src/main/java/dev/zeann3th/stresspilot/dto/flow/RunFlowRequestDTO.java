@@ -1,9 +1,18 @@
 package dev.zeann3th.stresspilot.dto.flow;
 
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
+import java.util.HashMap;
 import java.util.Map;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class RunFlowRequestDTO {
     @NotNull
     private int threads;
@@ -12,5 +21,6 @@ public class RunFlowRequestDTO {
     @NotNull
     private int rampUpDuration;
 
-    private Map<String, Object> variables;
+    @Builder.Default
+    private Map<String, Object> variables = new HashMap<>();
 }

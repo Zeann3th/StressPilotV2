@@ -13,11 +13,23 @@ public class EndpointDTO {
     private Long id;
     private String name;
     private String description;
-    private String method;
-    private String url;
-    private String headers;
-    private String body;
-    private String parameters;
+    private String type;
+
+    // HTTP
+    private String httpMethod;
+    private String httpUrl;
+    private String httpHeaders;
+    private String httpBody;
+    private String httpParameters;
+
+    // gRPC
+    private String grpcServiceName;
+    private String grpcMethodName;
+    private String grpcProtoFile;
+
+    // GraphQL
+    private String graphqlOperationType;
+    private String graphqlVariables;
+
     private Long projectId;
 }
-

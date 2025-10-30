@@ -3,6 +3,7 @@ package dev.zeann3th.stresspilot.service.parser.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import dev.zeann3th.stresspilot.common.enums.EndpointType;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
 import dev.zeann3th.stresspilot.dto.endpoint.ParsedEndpointDTO;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
@@ -83,11 +84,12 @@ public class PostmanParser implements ParserService {
         return ParsedEndpointDTO.builder()
                 .name(item.path("name").asText())
                 .description(item.path("description").asText(null))
-                .method(request.path("method").asText())
-                .url(request.path("url").path("raw").asText())
-                .headers(headers.isEmpty() ? null : headers)
-                .parameters(templatedParameters)
-                .body(templatedBody)
+                .type(EndpointType.HTTP.name())
+                .httpMethod(request.path("method").asText())
+                .httpUrl(request.path("url").path("raw").asText())
+                .httpHeaders(headers.isEmpty() ? null : headers)
+                .httpParameters(templatedParameters)
+                .httpBody(templatedBody)
                 .build();
     }
 

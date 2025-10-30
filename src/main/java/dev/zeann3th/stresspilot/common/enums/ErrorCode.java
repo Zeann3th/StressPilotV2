@@ -13,7 +13,8 @@ public enum ErrorCode {
     ENDPOINT_NOT_FOUND(HttpStatus.NOT_FOUND, "Endpoint not found"),
     ENDPOINT_PARSE_ERROR(HttpStatus.BAD_REQUEST, "Error parsing endpoints from specification"),
     ENDPOINT_UNSUPPORTED_FORMAT(HttpStatus.BAD_REQUEST, "Unsupported endpoint specification format"),
-    SYSTEM_BUSY(HttpStatus.INTERNAL_SERVER_ERROR, "System is busy, please try again later");
+    SYSTEM_BUSY(HttpStatus.INTERNAL_SERVER_ERROR, "System is busy, please try again later"),
+    EXECUTOR_UNSUPPORTED_TYPE(HttpStatus.BAD_REQUEST, "Unsupported executor type");
 
     private final HttpStatus status;
     private final String message;

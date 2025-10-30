@@ -1,6 +1,7 @@
 package dev.zeann3th.stresspilot.controller;
 
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
+import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
 import dev.zeann3th.stresspilot.service.EndpointService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
@@ -58,5 +59,14 @@ public class EndpointController {
             @RequestParam("projectId") Long projectId) {
         endpointService.uploadEndpoints(file, projectId);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{endpointId}/execute")
+    public ResponseEntity<ExecuteEndpointResponseDTO> executeEndpoint(
+            @PathVariable("endpointId") Long endpointId,
+            @RequestBody Map<String, Object> requestBody
+    ) {
+        var resp = endpointService.runEndpoint(endpointId, requestBody);
+        return ResponseEntity.ok(resp);
     }
 }

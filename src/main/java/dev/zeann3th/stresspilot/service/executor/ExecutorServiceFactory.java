@@ -14,7 +14,7 @@ public class ExecutorServiceFactory {
 
     public ExecutorService getExecutor(String type) {
         return executors.stream()
-                .filter(executor -> executor.getType().name().equalsIgnoreCase(type))
+                .filter(executor -> executor.getType().equalsIgnoreCase(type))
                 .findFirst()
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.EXECUTOR_UNSUPPORTED_TYPE));
     }

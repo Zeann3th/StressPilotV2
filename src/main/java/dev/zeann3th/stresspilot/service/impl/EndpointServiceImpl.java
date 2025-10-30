@@ -176,7 +176,7 @@ public class EndpointServiceImpl implements EndpointService {
 
         long startTime = System.currentTimeMillis();
         try {
-            return executorService.execute(endpointEntity, environment);
+            return executorService.execute(endpointEntity, environment, null);
         } catch (Exception e) {
             log.error("Error executing endpoint {}: {}", endpointId, e.getMessage(), e);
             Map<String, Object> data = Map.of("error", e.getMessage());

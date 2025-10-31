@@ -2,7 +2,7 @@ package dev.zeann3th.stresspilot.controller;
 
 import dev.zeann3th.stresspilot.dto.project.ProjectRequestDTO;
 import dev.zeann3th.stresspilot.dto.project.ProjectDTO;
-import dev.zeann3th.stresspilot.service.ProjectService;
+import dev.zeann3th.stresspilot.service.project.ProjectService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;

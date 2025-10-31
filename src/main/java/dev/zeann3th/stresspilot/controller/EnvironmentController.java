@@ -2,7 +2,7 @@ package dev.zeann3th.stresspilot.controller;
 
 import dev.zeann3th.stresspilot.dto.environment.EnvironmentVariableDTO;
 import dev.zeann3th.stresspilot.dto.environment.UpdateEnvironmentRequestDTO;
-import dev.zeann3th.stresspilot.service.EnvironmentService;
+import dev.zeann3th.stresspilot.service.environment.EnvironmentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

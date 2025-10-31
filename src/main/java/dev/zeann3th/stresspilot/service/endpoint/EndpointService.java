@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service;
+package dev.zeann3th.stresspilot.service.endpoint;
 
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;

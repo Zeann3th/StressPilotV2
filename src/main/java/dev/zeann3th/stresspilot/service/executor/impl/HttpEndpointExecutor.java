@@ -1,12 +1,13 @@
 package dev.zeann3th.stresspilot.service.executor.impl;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.zeann3th.stresspilot.common.enums.ConfigKey;
 import dev.zeann3th.stresspilot.common.enums.EndpointType;
 import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
 import dev.zeann3th.stresspilot.entity.EndpointEntity;
 import dev.zeann3th.stresspilot.service.ConfigService;
-import dev.zeann3th.stresspilot.service.executor.ExecutorService;
+import dev.zeann3th.stresspilot.service.executor.EndpointExecutorService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @RequiredArgsConstructor
 @SuppressWarnings("unused")
-public class HttpExecutor implements ExecutorService {
+public class HttpEndpointExecutor implements EndpointExecutorService {
     private final ConfigService configService;
     private final ObjectMapper objectMapper;
 
@@ -96,7 +98,7 @@ public class HttpExecutor implements ExecutorService {
         }
     }
 
-    private Request buildRequest(EndpointEntity endpoint, Map<String, Object> environment) throws Exception {
+    private Request buildRequest(EndpointEntity endpoint, Map<String, Object> environment) {
         String url = replaceVariables(endpoint.getUrl(), environment);
 
         log.debug("Building request - URL after variable replacement: {}", url);
@@ -154,19 +156,19 @@ public class HttpExecutor implements ExecutorService {
             return new HashMap<>();
         }
         try {
-            return objectMapper.readValue(headersJson, Map.class);
+            return objectMapper.readValue(headersJson, new TypeReference<>() {});
         } catch (Exception e) {
             log.warn("Failed to parse headers: {}", e.getMessage());
             return new HashMap<>();
         }
     }
 
-    private String parseBody(String bodyJson, Map<String, Object> environment) throws Exception {
+    private String parseBody(String bodyJson, Map<String, Object> environment) {
         if (bodyJson == null || bodyJson.isEmpty()) {
             return "";
         }
         try {
-            Map<String, Object> bodyMap = objectMapper.readValue(bodyJson, Map.class);
+            Map<String, Object> bodyMap = objectMapper.readValue(bodyJson, new TypeReference<>() {});
             Map<String, Object> replaced = replaceVariablesInMap(bodyMap, environment);
             return objectMapper.writeValueAsString(replaced);
         } catch (Exception e) {
@@ -193,31 +195,25 @@ public class HttpExecutor implements ExecutorService {
         Map<String, Object> result = new HashMap<>();
         for (Map.Entry<String, Object> entry : input.entrySet()) {
             Object value = entry.getValue();
-            if (value instanceof String valueStr) {
-                result.put(entry.getKey(), replaceVariables(valueStr, environment));
-            } else if (value instanceof Map) {
-                result.put(entry.getKey(), replaceVariablesInMap((Map<String, Object>) value, environment));
-            } else if (value instanceof java.util.List) {
-                result.put(entry.getKey(), replaceVariablesInList((java.util.List<?>) value, environment));
-            } else {
-                result.put(entry.getKey(), value);
+            switch (value) {
+                case String valueStr -> result.put(entry.getKey(), replaceVariables(valueStr, environment));
+                case Map<?,?> map -> result.put(entry.getKey(), replaceVariablesInMap((Map<String, Object>) value, environment));
+                case List<?> list -> result.put(entry.getKey(), replaceVariablesInList(list, environment));
+                case null, default -> result.put(entry.getKey(), value);
             }
         }
         return result;
     }
 
     @SuppressWarnings("unchecked")
-    private java.util.List<Object> replaceVariablesInList(java.util.List<?> input, Map<String, Object> environment) {
-        java.util.List<Object> result = new java.util.ArrayList<>();
+    private List<Object> replaceVariablesInList(List<?> input, Map<String, Object> environment) {
+        List<Object> result = new java.util.ArrayList<>();
         for (Object item : input) {
-            if (item instanceof String itemStr) {
-                result.add(replaceVariables(itemStr, environment));
-            } else if (item instanceof Map) {
-                result.add(replaceVariablesInMap((Map<String, Object>) item, environment));
-            } else if (item instanceof java.util.List) {
-                result.add(replaceVariablesInList((java.util.List<?>) item, environment));
-            } else {
-                result.add(item);
+            switch (item) {
+                case String itemStr -> result.add(replaceVariables(itemStr, environment));
+                case Map<?,?> map -> result.add(replaceVariablesInMap((Map<String, Object>) item, environment));
+                case List<?> list -> result.add(replaceVariablesInList(list, environment));
+                case null, default -> result.add(item);
             }
         }
         return result;
@@ -228,7 +224,7 @@ public class HttpExecutor implements ExecutorService {
             return new HashMap<>();
         }
         try {
-            return objectMapper.readValue(rawResponse, Map.class);
+            return objectMapper.readValue(rawResponse, new TypeReference<>() {});
         } catch (Exception e) {
             log.debug("Response is not JSON, returning empty data map");
             return new HashMap<>();

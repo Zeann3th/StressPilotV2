@@ -2,7 +2,7 @@ package dev.zeann3th.stresspilot.controller;
 
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
-import dev.zeann3th.stresspilot.service.EndpointService;
+import dev.zeann3th.stresspilot.service.endpoint.EndpointService;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;

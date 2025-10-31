@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service;
+package dev.zeann3th.stresspilot.service.flow;
 
 import dev.zeann3th.stresspilot.dto.flow.CreateFlowRequestDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;

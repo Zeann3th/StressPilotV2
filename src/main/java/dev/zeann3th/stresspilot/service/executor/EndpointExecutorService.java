@@ -6,7 +6,7 @@ import okhttp3.CookieJar;
 
 import java.util.Map;
 
-public interface ExecutorService {
+public interface EndpointExecutorService {
     String getType();
 
     ExecuteEndpointResponseDTO execute(EndpointEntity endpointEntity, Map<String, Object> environment, CookieJar cookieJar);

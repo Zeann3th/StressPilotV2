@@ -8,10 +8,14 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface FlowStepRepository extends JpaRepository<FlowStepEntity, String> {
     @Transactional
     @Modifying
     @Query("DELETE FROM FlowStepEntity fse WHERE fse.flowId = :flowId")
     void deleteAllByFlowId(@Param("flowId") Long flowId);
+
+    List<FlowStepEntity> findAllByFlowId(Long flowId);
 }

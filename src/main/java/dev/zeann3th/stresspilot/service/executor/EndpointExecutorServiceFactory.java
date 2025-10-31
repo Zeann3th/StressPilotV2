@@ -9,10 +9,10 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-public class ExecutorServiceFactory {
-    private final List<ExecutorService> executors;
+public class EndpointExecutorServiceFactory {
+    private final List<EndpointExecutorService> executors;
 
-    public ExecutorService getExecutor(String type) {
+    public EndpointExecutorService getExecutor(String type) {
         return executors.stream()
                 .filter(executor -> executor.getType().equalsIgnoreCase(type))
                 .findFirst()

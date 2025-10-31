@@ -1,5 +1,6 @@
 package dev.zeann3th.stresspilot.dto.flow;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +16,16 @@ import java.util.Map;
 @Builder
 public class RunFlowRequestDTO {
     @NotNull
-    private int threads;
+    @Min(value = 1, message = "threads must be greater than 0")
+    private Integer threads;
+
     @NotNull
-    private int totalDuration;
+    @Min(value = 1, message = "totalDuration must be greater than 0")
+    private Integer totalDuration;
+
     @NotNull
-    private int rampUpDuration;
+    @Min(value = 0, message = "rampUpDuration cannot be negative")
+    private Integer rampUpDuration;
 
     @Builder.Default
     private Map<String, Object> variables = new HashMap<>();

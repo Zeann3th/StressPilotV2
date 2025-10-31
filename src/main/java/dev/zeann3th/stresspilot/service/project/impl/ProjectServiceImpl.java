@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service.impl;
+package dev.zeann3th.stresspilot.service.project.impl;
 
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
 import dev.zeann3th.stresspilot.common.mappers.ProjectMapper;
@@ -9,7 +9,7 @@ import dev.zeann3th.stresspilot.entity.ProjectEntity;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.repository.EnvironmentRepository;
 import dev.zeann3th.stresspilot.repository.ProjectRepository;
-import dev.zeann3th.stresspilot.service.ProjectService;
+import dev.zeann3th.stresspilot.service.project.ProjectService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;

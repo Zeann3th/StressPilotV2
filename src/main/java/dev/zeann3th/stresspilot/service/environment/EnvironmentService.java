@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service;
+package dev.zeann3th.stresspilot.service.environment;
 
 import dev.zeann3th.stresspilot.dto.environment.EnvironmentVariableDTO;
 import dev.zeann3th.stresspilot.dto.environment.UpdateEnvironmentRequestDTO;

@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service.impl;
+package dev.zeann3th.stresspilot.service.endpoint.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -16,9 +16,9 @@ import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.repository.EndpointRepository;
 import dev.zeann3th.stresspilot.repository.EnvironmentVariableRepository;
 import dev.zeann3th.stresspilot.repository.ProjectRepository;
-import dev.zeann3th.stresspilot.service.EndpointService;
-import dev.zeann3th.stresspilot.service.executor.ExecutorService;
-import dev.zeann3th.stresspilot.service.executor.ExecutorServiceFactory;
+import dev.zeann3th.stresspilot.service.endpoint.EndpointService;
+import dev.zeann3th.stresspilot.service.executor.EndpointExecutorService;
+import dev.zeann3th.stresspilot.service.executor.EndpointExecutorServiceFactory;
 import dev.zeann3th.stresspilot.service.parser.ParserService;
 import dev.zeann3th.stresspilot.service.parser.ParserServiceFactory;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +45,7 @@ public class EndpointServiceImpl implements EndpointService {
     private final EndpointMapper endpointMapper;
     private final ObjectMapper objectMapper;
     private final ParserServiceFactory parserServiceFactory;
-    private final ExecutorServiceFactory executorServiceFactory;
+    private final EndpointExecutorServiceFactory endpointExecutorServiceFactory;
 
     @Override
     public Page<EndpointDTO> getListEndpoint(Long projectId, String name, Pageable pageable) {
@@ -172,11 +172,11 @@ public class EndpointServiceImpl implements EndpointService {
             environment.putAll(variables);
         }
 
-        ExecutorService executorService = executorServiceFactory.getExecutor(endpointEntity.getType());
+        EndpointExecutorService endpointExecutorService = endpointExecutorServiceFactory.getExecutor(endpointEntity.getType());
 
         long startTime = System.currentTimeMillis();
         try {
-            return executorService.execute(endpointEntity, environment, null);
+            return endpointExecutorService.execute(endpointEntity, environment, null);
         } catch (Exception e) {
             log.error("Error executing endpoint {}: {}", endpointId, e.getMessage(), e);
             Map<String, Object> data = Map.of("error", e.getMessage());

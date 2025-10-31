@@ -4,7 +4,7 @@ import dev.zeann3th.stresspilot.dto.flow.CreateFlowRequestDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowResponseDTO;
 import dev.zeann3th.stresspilot.dto.flow.FlowStepDTO;
 import dev.zeann3th.stresspilot.dto.flow.RunFlowRequestDTO;
-import dev.zeann3th.stresspilot.service.FlowService;
+import dev.zeann3th.stresspilot.service.flow.FlowService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;

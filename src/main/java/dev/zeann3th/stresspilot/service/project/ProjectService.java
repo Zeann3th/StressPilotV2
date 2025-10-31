@@ -1,4 +1,4 @@
-package dev.zeann3th.stresspilot.service;
+package dev.zeann3th.stresspilot.service.project;
 
 import dev.zeann3th.stresspilot.dto.project.ProjectDTO;
 import dev.zeann3th.stresspilot.dto.project.ProjectRequestDTO;

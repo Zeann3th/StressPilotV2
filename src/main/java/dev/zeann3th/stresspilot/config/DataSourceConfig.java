@@ -46,6 +46,17 @@ public class DataSourceConfig {
             if (!dbExists) {
                 try (Connection conn = dataSource.getConnection(); Statement stmt = conn.createStatement()) {
                     stmt.execute("PRAGMA journal_mode = WAL;");
+
+                    String sql = new String(
+                            getClass().getClassLoader().getResourceAsStream("db/init.sql").readAllBytes()
+                    );
+
+                    for (String s : sql.split(";")) {
+                        String trimmed = s.trim();
+                        if (!trimmed.isEmpty()) stmt.execute(trimmed);
+                    }
+
+                    log.info("Database initialized using init.sql");
                 }
             }
 

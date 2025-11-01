@@ -17,6 +17,7 @@ public class FlowThreadContext {
     private int iterationCount;
     private CookieJar cookieJar;
     private Map<String, Object> variables;
+    private Long runId;
 
     public void incrementIteration() {
         this.iterationCount++;

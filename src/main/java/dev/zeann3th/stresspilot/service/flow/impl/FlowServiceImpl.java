@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.zeann3th.stresspilot.common.Constants;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
+import dev.zeann3th.stresspilot.common.enums.RunStatus;
 import dev.zeann3th.stresspilot.common.mappers.FlowMapper;
 import dev.zeann3th.stresspilot.common.utils.InMemoryCookieJar;
 import dev.zeann3th.stresspilot.dto.flow.*;
@@ -36,6 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 @SuppressWarnings("java:S3776")
 public class FlowServiceImpl implements FlowService {
+
     private static final String STEP_ID = "stepId";
     private static final String START = "START";
     private static final String ENDPOINT = "ENDPOINT";
@@ -46,9 +48,13 @@ public class FlowServiceImpl implements FlowService {
     private final ProjectRepository projectRepository;
     private final EnvironmentVariableRepository envVarRepo;
     private final EndpointRepository endpointRepository;
+    private final RunRepository runRepository;
+    private final RequestLogRepository requestLogRepository;
     private final EndpointExecutorServiceFactory endpointExecutorServiceFactory;
     private final ObjectMapper objectMapper;
     private final FlowMapper flowMapper;
+
+    /* ==================== FLOW CRUD ==================== */
 
     @Override
     public Page<FlowResponseDTO> getListFlow(Long projectId, String name, Pageable pageable) {
@@ -60,8 +66,8 @@ public class FlowServiceImpl implements FlowService {
     public FlowResponseDTO getFlowDetail(Long flowId) {
         FlowEntity flowEntity = flowRepository.findById(flowId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.FLOW_NOT_FOUND));
-        var resp = flowMapper.toDetailDTO(flowEntity);
 
+        var resp = flowMapper.toDetailDTO(flowEntity);
         List<FlowStepEntity> steps = flowStepRepository.findAllByFlowId(flowId);
         sortSteps(steps);
 
@@ -77,6 +83,7 @@ public class FlowServiceImpl implements FlowService {
                         .condition(entity.getCondition())
                         .build())
                 .toList();
+
         resp.setSteps(stepDTOs);
         return resp;
     }
@@ -103,8 +110,9 @@ public class FlowServiceImpl implements FlowService {
 
     @Override
     public void deleteFlow(Long flowId) {
-        boolean exists = flowRepository.existsById(flowId);
-        if (!exists) throw CommandExceptionBuilder.exception(ErrorCode.FLOW_NOT_FOUND);
+        if (!flowRepository.existsById(flowId))
+            throw CommandExceptionBuilder.exception(ErrorCode.FLOW_NOT_FOUND);
+
         flowRepository.deleteById(flowId);
         flowStepRepository.deleteAllByFlowId(flowId);
     }
@@ -125,9 +133,12 @@ public class FlowServiceImpl implements FlowService {
             FlowEntity updated = flowRepository.save(flowEntity);
             return flowMapper.toDetailDTO(updated);
         } catch (JsonMappingException e) {
-            throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Invalid data format"));
+            throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                    Map.of(Constants.REASON, "Invalid data format"));
         }
     }
+
+    /* ==================== CONFIGURE FLOW ==================== */
 
     @Override
     @Transactional
@@ -141,7 +152,9 @@ public class FlowServiceImpl implements FlowService {
         Map<String, String> stepIdMap = steps.stream()
                 .collect(Collectors.toMap(FlowStepDTO::getId, s -> UUID.randomUUID().toString()));
 
-        for (FlowStepDTO dto : steps) validateStep(dto, stepIdMap);
+        for (FlowStepDTO dto : steps)
+            validateStep(dto, stepIdMap);
+
         FlowUtils.detectInfiniteLoop(steps, stepIdMap);
 
         List<FlowStepEntity> entities = new ArrayList<>();
@@ -181,31 +194,42 @@ public class FlowServiceImpl implements FlowService {
                 .toList();
     }
 
-    @SuppressWarnings({"java:S3776", "java:S6916", "java:S6541"})
     private void validateStep(FlowStepDTO step, Map<String, String> stepIdMap) {
         String type = step.getType().toUpperCase();
         switch (type) {
             case START -> {
                 if (step.getEndpointId() != null)
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "START node cannot have endpointId"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "START node cannot have endpointId"));
                 if (step.getNextIfTrue() == null || !stepIdMap.containsKey(step.getNextIfTrue()))
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "START node must have a valid nextIfTrue target"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "START node must have a valid nextIfTrue target"));
                 if (step.getNextIfFalse() != null)
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "START node cannot have nextIfFalse"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "START node cannot have nextIfFalse"));
             }
             case ENDPOINT -> {
-                if (step.getEndpointId() == null || !endpointRepository.existsById(step.getEndpointId()))
-                    throw CommandExceptionBuilder.exception(ErrorCode.ENDPOINT_NOT_FOUND, Map.of(STEP_ID, step.getId()));
+                boolean invalid = step.getEndpointId() == null || !endpointRepository.existsById(step.getEndpointId());
+                if (invalid) {
+                    throw CommandExceptionBuilder.exception(
+                            ErrorCode.ENDPOINT_NOT_FOUND,
+                            Map.of(STEP_ID, step.getId())
+                    );
+                }
             }
             case BRANCH -> {
                 if (step.getCondition() == null || step.getCondition().isBlank())
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Branch node must have condition"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "Branch node must have condition"));
                 if (step.getNextIfTrue() == null || !stepIdMap.containsKey(step.getNextIfTrue()))
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Branch node has invalid nextIfTrue"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "Branch node has invalid nextIfTrue"));
                 if (step.getNextIfFalse() == null || !stepIdMap.containsKey(step.getNextIfFalse()))
-                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Branch node has invalid nextIfFalse"));
+                    throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                            Map.of(Constants.REASON, "Branch node has invalid nextIfFalse"));
             }
-            default -> throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST, Map.of(Constants.REASON, "Unknown step type: " + step.getType()));
+            default -> throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
+                    Map.of(Constants.REASON, "Unknown step type: " + step.getType()));
         }
     }
 
@@ -230,6 +254,15 @@ public class FlowServiceImpl implements FlowService {
                 .stream()
                 .collect(Collectors.toMap(EnvironmentVariableEntity::getKey, EnvironmentVariableEntity::getValue, (v1, v2) -> v2));
 
+        RunEntity runEntity = RunEntity.builder()
+                .flowId(flowId)
+                .status(RunStatus.RUNNING.name())
+                .threads(runFlowRequestDTO.getThreads())
+                .duration(runFlowRequestDTO.getTotalDuration())
+                .rampUpDuration(runFlowRequestDTO.getRampUpDuration())
+                .build();
+        RunEntity savedRun = runRepository.save(runEntity);
+
         environment.putAll(runFlowRequestDTO.getVariables());
 
         List<FlowStepEntity> steps = flowStepRepository.findAllByFlowId(flowId);
@@ -246,10 +279,13 @@ public class FlowServiceImpl implements FlowService {
 
         sortSteps(steps);
 
-        executeFlowWithThreads(flowId, stepMap, endpointMap, environment, runFlowRequestDTO);
+        executeFlowWithThreads(savedRun.getId(), stepMap, endpointMap, environment, runFlowRequestDTO);
+
+        savedRun.setStatus(RunStatus.COMPLETED.name());
+        runRepository.save(savedRun);
     }
 
-    private void executeFlowWithThreads(Long flowId,
+    private void executeFlowWithThreads(Long runId,
                                         Map<String, FlowStepEntity> stepMap,
                                         Map<Long, EndpointEntity> endpointMap,
                                         Map<String, Object> baseEnvironment,
@@ -282,12 +318,10 @@ public class FlowServiceImpl implements FlowService {
                 try {
                     if (startDelay > 0) Thread.sleep(startDelay);
                     log.info("Thread {} started", threadIndex);
-
-                    FlowThreadContext context = createThreadContext(threadIndex, baseEnvironment);
-
+                    FlowThreadContext context = createThreadContext(threadIndex, baseEnvironment, runId);
                     while (!stopSignal.get() && System.currentTimeMillis() < testEndTime) {
                         try {
-                            executeFlowIteration(flowId, stepMap, endpointMap, context, stopSignal, testEndTime);
+                            executeFlowIteration(stepMap, endpointMap, context, stopSignal, testEndTime);
                         } catch (Exception e) {
                             log.error("Thread {} iteration {} error: {}", threadIndex, context.getIterationCount(), e.getMessage(), e);
                         }
@@ -306,27 +340,25 @@ public class FlowServiceImpl implements FlowService {
 
         for (Future<?> future : futures) {
             try { future.get(); }
-            catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException e) {
-                log.error("Thread execution error: {}", e.getMessage());
-            }
+            catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+            catch (ExecutionException e) { log.error("Thread execution error: {}", e.getMessage()); }
         }
 
         executor.shutdown();
         timeoutScheduler.shutdown();
     }
 
-    private FlowThreadContext createThreadContext(int threadIndex, Map<String, Object> baseEnvironment) {
+    private FlowThreadContext createThreadContext(int threadIndex, Map<String, Object> baseEnvironment, Long runId) {
         FlowThreadContext context = new FlowThreadContext();
         context.setThreadId(threadIndex);
         context.setCookieJar(new InMemoryCookieJar());
         context.setVariables(new ConcurrentHashMap<>(baseEnvironment));
         context.setIterationCount(0);
+        context.setRunId(runId);
         return context;
     }
 
-    private void executeFlowIteration(Long flowId, Map<String, FlowStepEntity> stepMap,
+    private void executeFlowIteration(Map<String, FlowStepEntity> stepMap,
                                       Map<Long, EndpointEntity> endpointMap,
                                       FlowThreadContext context,
                                       AtomicBoolean stopSignal,
@@ -334,7 +366,7 @@ public class FlowServiceImpl implements FlowService {
 
         context.incrementIteration();
         FlowStepEntity currentStep = FlowUtils.findStartNode(stepMap);
-        if (currentStep == null) { log.warn("No START node found for flow {}", flowId); return; }
+        if (currentStep == null) { log.warn("No START node found"); return; }
 
         String nextStepId = currentStep.getNextIfTrue();
         currentStep = stepMap.get(nextStepId);
@@ -345,7 +377,6 @@ public class FlowServiceImpl implements FlowService {
                 switch (stepType) {
                     case ENDPOINT -> {
                         ExecuteEndpointResponseDTO result = executeEndpointStep(currentStep, endpointMap, context);
-                        logStepResult(flowId, currentStep.getId(), context.getThreadId(), context.getIterationCount(), result);
                         nextStepId = result.isSuccess() && currentStep.getNextIfTrue() != null ? currentStep.getNextIfTrue() : currentStep.getNextIfFalse();
                     }
                     case BRANCH -> {
@@ -357,7 +388,6 @@ public class FlowServiceImpl implements FlowService {
                 }
                 currentStep = nextStepId != null ? stepMap.get(nextStepId) : null;
             } catch (Exception e) {
-                logStepError(flowId, currentStep.getId(), context.getThreadId(), context.getIterationCount(), e);
                 break;
             }
         }
@@ -384,6 +414,8 @@ public class FlowServiceImpl implements FlowService {
                     .rawResponse(data.toString())
                     .build();
         }
+
+        logStepResult(context.getRunId(), endpointEntity, result);
 
         if (step.getPostProcessor() != null && !step.getPostProcessor().isBlank())
             executeProcessor(step.getPostProcessor(), context, result.getData(), "post-processor");
@@ -412,12 +444,15 @@ public class FlowServiceImpl implements FlowService {
         }
     }
 
-    @SuppressWarnings("all")
-    private void logStepResult(Long flowId, String stepId, int threadId, int iteration, ExecuteEndpointResponseDTO result) {
-    }
-
-    @SuppressWarnings("all")
-    private void logStepError(Long flowId, String stepId, int threadId, int iteration, Exception error) {
-
+    private void logStepResult(Long runId, EndpointEntity request, ExecuteEndpointResponseDTO response) {
+        RequestLogEntity logEntity = RequestLogEntity.builder()
+                .runId(runId)
+                .endpointId(request.getId())
+                .statusCode(response.getStatusCode())
+                .responseTime(response.getResponseTimeMs())
+                .request(request.toString())
+                .response(response.getRawResponse())
+                .build();
+        requestLogRepository.save(logEntity);
     }
 }

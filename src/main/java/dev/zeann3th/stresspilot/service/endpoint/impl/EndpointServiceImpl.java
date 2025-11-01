@@ -132,6 +132,14 @@ public class EndpointServiceImpl implements EndpointService {
 
     private EndpointEntity buildEndpoint(Long projectId, EndpointDTO dto) {
         try {
+            String httpBodyJson = null;
+            if (dto.getHttpBody() != null) {
+                if (dto.getHttpBody() instanceof String string && string.isBlank()) {
+                    httpBodyJson = "{}";
+                } else {
+                    httpBodyJson = objectMapper.writeValueAsString(dto.getHttpBody());
+                }
+            }
             return EndpointEntity.builder()
                     .name(dto.getName())
                     .description(dto.getDescription())
@@ -140,7 +148,7 @@ public class EndpointServiceImpl implements EndpointService {
                     // Http
                     .httpMethod(dto.getHttpMethod())
                     .httpHeaders(dto.getHttpHeaders() != null ? objectMapper.writeValueAsString(dto.getHttpHeaders()) : null)
-                    .httpBody(dto.getHttpBody() != null ? objectMapper.writeValueAsString(dto.getHttpBody()) : null)
+                    .httpBody(httpBodyJson)
                     .httpParameters(dto.getHttpParameters() != null ? objectMapper.writeValueAsString(dto.getHttpParameters()) : null)
                     // gRPC
                     .grpcServiceName(dto.getGrpcServiceName())
@@ -197,7 +205,9 @@ public class EndpointServiceImpl implements EndpointService {
     }
 
     @Override
-    public EndpointDTO createEndpoint(EndpointDTO createEndpointRequestDTO) {
-        return null;
+    public EndpointDTO createEndpoint(EndpointDTO endpointDTO) {
+        EndpointEntity endpointEntity = buildEndpoint(endpointDTO.getProjectId(), endpointDTO);
+        EndpointEntity savedEntity = endpointRepository.save(endpointEntity);
+        return endpointMapper.toDetailDTO(savedEntity);
     }
 }

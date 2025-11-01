@@ -5,8 +5,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -16,6 +14,6 @@ public class ExecuteEndpointResponseDTO {
     private boolean success;
     private String message;
     private long responseTimeMs;
-    private Map<String, Object> data;
+    private Object data;
     private String rawResponse;
 }

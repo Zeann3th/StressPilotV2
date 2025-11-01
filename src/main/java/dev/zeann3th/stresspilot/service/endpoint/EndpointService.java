@@ -13,7 +13,7 @@ public interface EndpointService {
 
     EndpointDTO getEndpointDetail(Long endpointId);
 
-    EndpointDTO createEndpoint(EndpointDTO createEndpointRequestDTO);
+    EndpointDTO createEndpoint(EndpointDTO endpointDTO);
 
     EndpointDTO updateEndpoint(Long endpointId, Map<String, Object> endpointUpdateRequest);
 

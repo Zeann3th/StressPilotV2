@@ -219,15 +219,21 @@ public class HttpEndpointExecutor implements EndpointExecutorService {
         return result;
     }
 
-    private Map<String, Object> parseResponseData(String rawResponse) {
+    private Object parseResponseData(String rawResponse) {
         if (rawResponse == null || rawResponse.isEmpty()) {
-            return new HashMap<>();
+            return Map.of();
         }
         try {
-            return objectMapper.readValue(rawResponse, new TypeReference<>() {});
+            if (rawResponse.trim().startsWith("{")) {
+                return objectMapper.readValue(rawResponse, new TypeReference<Map<String, Object>>() {});
+            } else if (rawResponse.trim().startsWith("[")) {
+                return objectMapper.readValue(rawResponse, new TypeReference<List<Object>>() {});
+            } else {
+                return rawResponse;
+            }
         } catch (Exception e) {
-            log.debug("Response is not JSON, returning empty data map");
-            return new HashMap<>();
+            log.debug("Failed to parse response JSON", e);
+            return rawResponse;
         }
     }
 }

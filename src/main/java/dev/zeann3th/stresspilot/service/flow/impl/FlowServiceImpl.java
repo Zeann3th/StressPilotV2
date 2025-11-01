@@ -24,6 +24,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.expression.spel.support.StandardEvaluationContext;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -242,6 +243,7 @@ public class FlowServiceImpl implements FlowService {
     }
 
     @Override
+    @Async
     public void runFlow(Long flowId, RunFlowRequestDTO runFlowRequestDTO) {
         FlowEntity flowEntity = flowRepository.findById(flowId)
                 .orElseThrow(() -> CommandExceptionBuilder.exception(ErrorCode.FLOW_NOT_FOUND));
@@ -423,7 +425,7 @@ public class FlowServiceImpl implements FlowService {
         return result;
     }
 
-    private void executeProcessor(String processorJson, FlowThreadContext context, Map<String, Object> responseData, String type) {
+    private void executeProcessor(String processorJson, FlowThreadContext context, Object responseData, String type) {
         try {
             Map<String, Object> processor = objectMapper.readValue(processorJson, new TypeReference<>() {});
             FlowUtils.process(processor, context.getVariables(), responseData);

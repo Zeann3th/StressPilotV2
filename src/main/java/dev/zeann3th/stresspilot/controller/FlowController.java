@@ -66,7 +66,7 @@ public class FlowController {
         return ResponseEntity.ok(resp);
     }
 
-    @PostMapping("/{flowId}/run")
+    @PostMapping("/{flowId}/execute")
     public ResponseEntity<Void> runFlow(@PathVariable("flowId") Long flowId, @RequestBody RunFlowRequestDTO runFlowRequestDTO) {
         flowService.runFlow(flowId, runFlowRequestDTO);
         return ResponseEntity.accepted().build();

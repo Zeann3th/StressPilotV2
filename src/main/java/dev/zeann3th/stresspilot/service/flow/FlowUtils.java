@@ -21,7 +21,7 @@ public class FlowUtils {
 
     private FlowUtils() {}
 
-    public static void process(Map<String, Object> processorMap, Map<String, Object> environment, Map<String, Object> prevResp) {
+    public static void process(Map<String, Object> processorMap, Map<String, Object> environment, Object prevResp) {
         if (CollectionUtils.isEmpty(processorMap)) return;
 
         try {

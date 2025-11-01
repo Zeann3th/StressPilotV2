@@ -3,6 +3,7 @@ package dev.zeann3th.stresspilot.controller;
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
 import dev.zeann3th.stresspilot.service.endpoint.EndpointService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,12 @@ public class EndpointController {
     @GetMapping("/{endpointId}")
     public ResponseEntity<EndpointDTO> getEndpointDetail(@PathVariable("endpointId") Long endpointId) {
         var resp = endpointService.getEndpointDetail(endpointId);
+        return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping
+    public ResponseEntity<EndpointDTO> createEndpoint(@Valid @RequestBody EndpointDTO createEndpointRequestDTO) {
+        var resp = endpointService.createEndpoint(createEndpointRequestDTO);
         return ResponseEntity.ok(resp);
     }
 

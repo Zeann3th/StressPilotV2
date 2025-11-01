@@ -13,7 +13,7 @@ import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.Statement;
 
-@Slf4j
+@Slf4j(topic = "[Database Migrator]")
 @Configuration
 @SuppressWarnings("all")
 public class DataSourceConfig {
@@ -22,7 +22,7 @@ public class DataSourceConfig {
         try {
             String appHome = System.getenv("PILOT_HOME");
             if (appHome == null || appHome.isEmpty()) {
-                log.warn("[Database Migrator] PILOT_HOME not set, defaulting to user home directory");
+                log.warn("PILOT_HOME not set, defaulting to user home directory");
                 appHome = System.getProperty("user.home") + "/" + Constants.APP_DIR;
             }
 
@@ -32,10 +32,10 @@ public class DataSourceConfig {
             boolean dbExists = Files.exists(dbPath);
 
             if (!dbExists) {
-                log.info("[Database Migrator] Database file not found, creating new database at {}", dbPath);
+                log.info("Database file not found, creating new database at {}", dbPath);
                 Files.createFile(dbPath);
             } else {
-                log.info("[Database Migrator] Database file exists, skipping initiation");
+                log.info("Database file exists, skipping initiation");
             }
 
             String jdbcUrl = "jdbc:sqlite:" + dbPath.toAbsolutePath();
@@ -49,10 +49,10 @@ public class DataSourceConfig {
                 }
             }
 
-            log.info("[Database Migrator] Data source configured with URL: {}", jdbcUrl);
+            log.info("Data source configured with URL: {}", jdbcUrl);
             return dataSource;
         } catch (Exception e) {
-            throw new RuntimeException("[Database Migrator] Failed to configure data source", e);
+            throw new RuntimeException("Failed to configure data source", e);
         }
     }
 }

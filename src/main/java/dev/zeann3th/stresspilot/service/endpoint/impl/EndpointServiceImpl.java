@@ -8,7 +8,6 @@ import dev.zeann3th.stresspilot.common.enums.ErrorCode;
 import dev.zeann3th.stresspilot.common.mappers.EndpointMapper;
 import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.dto.endpoint.ExecuteEndpointResponseDTO;
-import dev.zeann3th.stresspilot.dto.endpoint.ParsedEndpointDTO;
 import dev.zeann3th.stresspilot.entity.EndpointEntity;
 import dev.zeann3th.stresspilot.entity.EnvironmentVariableEntity;
 import dev.zeann3th.stresspilot.entity.ProjectEntity;
@@ -118,7 +117,7 @@ public class EndpointServiceImpl implements EndpointService {
 
         try {
             String fileContent = new String(file.getBytes(), StandardCharsets.UTF_8);
-            List<ParsedEndpointDTO> parsedEndpoints = parser.parse(fileContent);
+            List<EndpointDTO> parsedEndpoints = parser.parse(fileContent);
 
             List<EndpointEntity> entities = parsedEndpoints.stream()
                     .map(parsedEndpointDTO -> buildEndpoint(projectId, parsedEndpointDTO))
@@ -131,25 +130,25 @@ public class EndpointServiceImpl implements EndpointService {
         }
     }
 
-    private EndpointEntity buildEndpoint(Long projectId, ParsedEndpointDTO parsedEndpointDTO) {
+    private EndpointEntity buildEndpoint(Long projectId, EndpointDTO dto) {
         try {
             return EndpointEntity.builder()
-                    .name(parsedEndpointDTO.getName())
-                    .description(parsedEndpointDTO.getDescription())
-                    .type(parsedEndpointDTO.getType())
-                    // HTTP
-                    .httpMethod(parsedEndpointDTO.getHttpMethod())
-                    .url(parsedEndpointDTO.getUrl())
-                    .httpHeaders(parsedEndpointDTO.getHttpHeaders() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpHeaders()) : null)
-                    .httpBody(parsedEndpointDTO.getHttpBody() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpBody()) : null)
-                    .httpParameters(parsedEndpointDTO.getHttpParameters() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpParameters()) : null)
+                    .name(dto.getName())
+                    .description(dto.getDescription())
+                    .type(dto.getType())
+                    .url(dto.getUrl())
+                    // Http
+                    .httpMethod(dto.getHttpMethod())
+                    .httpHeaders(dto.getHttpHeaders() != null ? objectMapper.writeValueAsString(dto.getHttpHeaders()) : null)
+                    .httpBody(dto.getHttpBody() != null ? objectMapper.writeValueAsString(dto.getHttpBody()) : null)
+                    .httpParameters(dto.getHttpParameters() != null ? objectMapper.writeValueAsString(dto.getHttpParameters()) : null)
                     // gRPC
-                    .grpcServiceName(parsedEndpointDTO.getGrpcServiceName())
-                    .grpcMethodName(parsedEndpointDTO.getGrpcMethodName())
-                    .grpcStubPath(parsedEndpointDTO.getGrpcStubPath())
+                    .grpcServiceName(dto.getGrpcServiceName())
+                    .grpcMethodName(dto.getGrpcMethodName())
+                    .grpcStubPath(dto.getGrpcStubPath())
                     // GraphQL
-                    .graphqlOperationType(parsedEndpointDTO.getGraphqlOperationType())
-                    .graphqlVariables(parsedEndpointDTO.getGraphqlVariables() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getGraphqlVariables()) : null)
+                    .graphqlOperationType(dto.getGraphqlOperationType())
+                    .graphqlVariables(dto.getGraphqlVariables() != null ? objectMapper.writeValueAsString(dto.getGraphqlVariables()) : null)
                     .projectId(projectId)
                     .build();
         } catch (JsonProcessingException e) {
@@ -195,5 +194,10 @@ public class EndpointServiceImpl implements EndpointService {
                     .rawResponse(data.toString())
                     .build();
         }
+    }
+
+    @Override
+    public EndpointDTO createEndpoint(EndpointDTO createEndpointRequestDTO) {
+        return null;
     }
 }

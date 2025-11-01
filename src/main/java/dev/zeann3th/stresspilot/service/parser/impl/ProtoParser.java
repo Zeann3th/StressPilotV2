@@ -6,7 +6,7 @@ import dev.zeann3th.stresspilot.common.Constants;
 import dev.zeann3th.stresspilot.common.enums.ConfigKey;
 import dev.zeann3th.stresspilot.common.enums.EndpointType;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
-import dev.zeann3th.stresspilot.dto.endpoint.ParsedEndpointDTO;
+import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.service.ConfigService;
 import dev.zeann3th.stresspilot.service.parser.ParserService;
@@ -46,7 +46,7 @@ public class ProtoParser implements ParserService {
     }
 
     @Override
-    public List<ParsedEndpointDTO> parse(String spec) {
+    public List<EndpointDTO> parse(String spec) {
         try {
             Path baseDir = getAppBaseDir();
             Path protoDir = baseDir.resolve(Paths.get("core", "grpc", "proto"));
@@ -60,7 +60,7 @@ public class ProtoParser implements ParserService {
             Path descriptorFile = protoDir.resolve(filename.replace(".proto", ".pb"));
             generateDescriptor(protoFile, descriptorFile);
 
-            List<ParsedEndpointDTO> endpoints = parseDescriptor(descriptorFile, protoFile.toAbsolutePath().toString());
+            List<EndpointDTO> endpoints = parseDescriptor(descriptorFile, protoFile.toAbsolutePath().toString());
 
             if (protocPluginPath != null) {
                 Path stubPath = generateGrpcStub(protoFile);
@@ -79,7 +79,7 @@ public class ProtoParser implements ParserService {
                         ? stubPath.resolve(packageName.replace(".", File.separator))
                         : stubPath;
 
-                for (ParsedEndpointDTO endpoint : endpoints) {
+                for (EndpointDTO endpoint : endpoints) {
                     endpoint.setGrpcStubPath(fullStubPath.toAbsolutePath().toString());
                 }
             }
@@ -105,7 +105,6 @@ public class ProtoParser implements ParserService {
         }
     }
 
-    /** Resolve application base directory */
     private Path getAppBaseDir() {
         String appDir = System.getProperty(Constants.PILOT_HOME);
         if (appDir != null && !appDir.isBlank()) {
@@ -123,7 +122,6 @@ public class ProtoParser implements ParserService {
                 "--include_imports",
                 protoFile.getFileName().toString()
         );
-
         runCommand(command, protoDir, "[protoc-descriptor]");
     }
 
@@ -145,18 +143,18 @@ public class ProtoParser implements ParserService {
         return outputDir;
     }
 
-    private List<ParsedEndpointDTO> parseDescriptor(Path descriptorFile, String protoFilePath) throws Exception {
+    private List<EndpointDTO> parseDescriptor(Path descriptorFile, String protoFilePath) throws Exception {
         byte[] descriptorBytes = Files.readAllBytes(descriptorFile);
         DescriptorProtos.FileDescriptorSet descriptorSet = DescriptorProtos.FileDescriptorSet.parseFrom(descriptorBytes);
 
-        List<ParsedEndpointDTO> endpoints = new ArrayList<>();
+        List<EndpointDTO> endpoints = new ArrayList<>();
         for (DescriptorProtos.FileDescriptorProto fileProto : descriptorSet.getFileList()) {
             Descriptors.FileDescriptor fileDescriptor =
                     Descriptors.FileDescriptor.buildFrom(fileProto, new Descriptors.FileDescriptor[]{});
 
             for (Descriptors.ServiceDescriptor service : fileDescriptor.getServices()) {
                 for (Descriptors.MethodDescriptor method : service.getMethods()) {
-                    ParsedEndpointDTO dto = ParsedEndpointDTO.builder()
+                    EndpointDTO dto = EndpointDTO.builder()
                             .name(method.getName())
                             .type(EndpointType.GRPC.name())
                             .url("{{url}}")
@@ -180,7 +178,6 @@ public class ProtoParser implements ParserService {
         pb.redirectErrorStream(true);
 
         Process process = pb.start();
-
         StringBuilder output = new StringBuilder();
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
             reader.lines().forEach(line -> {

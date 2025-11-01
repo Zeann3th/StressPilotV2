@@ -1,26 +1,34 @@
 package dev.zeann3th.stresspilot.dto.endpoint;
 
+import dev.zeann3th.stresspilot.common.validators.ValidEndpointRequest;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Map;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ValidEndpointRequest
 public class EndpointDTO {
     private Long id;
+    @NotNull
     private String name;
     private String description;
+    @NotNull
     private String type;
+    @NotNull
     private String url;
 
     // HTTP
     private String httpMethod;
-    private String httpHeaders;
-    private String httpBody;
-    private String httpParameters;
+    private Map<String, Object> httpHeaders;
+    private Object httpBody;
+    private Map<String, Object> httpParameters;
 
     // gRPC
     private String grpcServiceName;
@@ -29,7 +37,8 @@ public class EndpointDTO {
 
     // GraphQL
     private String graphqlOperationType;
-    private String graphqlVariables;
+    private Map<String, Object> graphqlVariables;
 
+    @NotNull
     private Long projectId;
 }

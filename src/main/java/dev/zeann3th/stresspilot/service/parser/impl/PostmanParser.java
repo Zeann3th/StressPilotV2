@@ -1,11 +1,9 @@
 package dev.zeann3th.stresspilot.service.parser.impl;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import dev.zeann3th.stresspilot.common.enums.EndpointType;
 import dev.zeann3th.stresspilot.common.enums.ErrorCode;
-import dev.zeann3th.stresspilot.dto.endpoint.ParsedEndpointDTO;
+import dev.zeann3th.stresspilot.dto.endpoint.EndpointDTO;
 import dev.zeann3th.stresspilot.exception.CommandExceptionBuilder;
 import dev.zeann3th.stresspilot.service.parser.ParserService;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +24,8 @@ public class PostmanParser implements ParserService {
     }
 
     @Override
-    public List<ParsedEndpointDTO> parse(String spec) {
-        List<ParsedEndpointDTO> endpoints = new ArrayList<>();
+    public List<EndpointDTO> parse(String spec) {
+        List<EndpointDTO> endpoints = new ArrayList<>();
         try {
             JsonNode root = objectMapper.readTree(spec);
             JsonNode items = root.path("item");
@@ -38,11 +36,10 @@ public class PostmanParser implements ParserService {
         return endpoints;
     }
 
-    private void extractEndpoints(JsonNode items, List<ParsedEndpointDTO> endpoints) {
+    private void extractEndpoints(JsonNode items, List<EndpointDTO> endpoints) {
         if (items.isArray()) {
             for (JsonNode item : items) {
                 if (item.has("item")) {
-                    // nested folders
                     extractEndpoints(item.get("item"), endpoints);
                 } else if (item.has("request")) {
                     endpoints.add(createEndpoint(item));
@@ -51,11 +48,11 @@ public class PostmanParser implements ParserService {
         }
     }
 
-    private ParsedEndpointDTO createEndpoint(JsonNode item) {
+    private EndpointDTO createEndpoint(JsonNode item) {
         JsonNode request = item.path("request");
 
         // Headers
-        Map<String, String> headers = new HashMap<>();
+        Map<String, Object> headers = new HashMap<>();
         for (JsonNode header : request.path("header")) {
             headers.put(header.path("key").asText(), header.path("value").asText());
         }
@@ -65,31 +62,29 @@ public class PostmanParser implements ParserService {
         for (JsonNode param : request.path("url").path("query")) {
             parameters.put(param.path("key").asText(), param.path("value").asText());
         }
-        Map<String, Object> templatedParameters = parameters.isEmpty() ? null : convertValuesToTemplate(parameters);
 
         // Body
-        Map<String, Object> body = new HashMap<>();
+        Object body = null;
         if ("raw".equals(request.path("body").path("mode").asText())) {
             try {
                 String rawBody = request.path("body").path("raw").asText();
                 if (!rawBody.isEmpty()) {
-                    body = objectMapper.readValue(rawBody, new TypeReference<>() {});
+                    body = objectMapper.readValue(rawBody, Object.class);
                 }
             } catch (Exception ignored) {
                 // no-op
             }
         }
-        Map<String, Object> templatedBody = body.isEmpty() ? null : convertValuesToTemplate(body);
 
-        return ParsedEndpointDTO.builder()
+        return EndpointDTO.builder()
                 .name(item.path("name").asText())
                 .description(item.path("description").asText(null))
-                .type(EndpointType.HTTP.name())
+                .type("HTTP")
                 .httpMethod(request.path("method").asText())
                 .url(request.path("url").path("raw").asText())
                 .httpHeaders(headers.isEmpty() ? null : headers)
-                .httpParameters(templatedParameters)
-                .httpBody(templatedBody)
+                .httpParameters(parameters.isEmpty() ? null : parameters)
+                .httpBody(body)
                 .build();
     }
 

@@ -82,7 +82,23 @@
             <version>4.12.0</version>
         </dependency>
 
-	</dependencies>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>3.25.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+            <version>1.60.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+            <version>1.60.0</version>
+        </dependency>
+
+    </dependencies>
 
 	<build>
 		<plugins>
@@ -115,6 +131,122 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <!-- Windows x86_64 -->
+                    <execution>
+                        <id>copy-grpc-plugin-windows</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>1.60.0</version>
+                                    <classifier>windows-x86_64</classifier>
+                                    <type>exe</type>
+                                    <outputDirectory>${project.build.directory}/classes/grpc-plugin</outputDirectory>
+                                    <destFileName>protoc-gen-grpc-java-windows-x86_64.exe</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- Linux x86_64 -->
+                    <execution>
+                        <id>copy-grpc-plugin-linux-x86_64</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>1.60.0</version>
+                                    <classifier>linux-x86_64</classifier>
+                                    <type>exe</type>
+                                    <outputDirectory>${project.build.directory}/classes/grpc-plugin</outputDirectory>
+                                    <destFileName>protoc-gen-grpc-java-linux-x86_64.exe</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- Linux aarch64 -->
+                    <execution>
+                        <id>copy-grpc-plugin-linux-aarch64</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>1.60.0</version>
+                                    <classifier>linux-aarch_64</classifier>
+                                    <type>exe</type>
+                                    <outputDirectory>${project.build.directory}/classes/grpc-plugin</outputDirectory>
+                                    <destFileName>protoc-gen-grpc-java-linux-aarch_64.exe</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- macOS x86_64 -->
+                    <execution>
+                        <id>copy-grpc-plugin-osx-x86_64</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>1.60.0</version>
+                                    <classifier>osx-x86_64</classifier>
+                                    <type>exe</type>
+                                    <outputDirectory>${project.build.directory}/classes/grpc-plugin</outputDirectory>
+                                    <destFileName>protoc-gen-grpc-java-osx-x86_64.exe</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- macOS aarch64 (Apple Silicon) -->
+                    <execution>
+                        <id>copy-grpc-plugin-osx-aarch64</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>io.grpc</groupId>
+                                    <artifactId>protoc-gen-grpc-java</artifactId>
+                                    <version>1.60.0</version>
+                                    <classifier>osx-aarch_64</classifier>
+                                    <type>exe</type>
+                                    <outputDirectory>${project.build.directory}/classes/grpc-plugin</outputDirectory>
+                                    <destFileName>protoc-gen-grpc-java-osx-aarch_64.exe</destFileName>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
 		</plugins>
 	</build>
 

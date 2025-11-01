@@ -8,7 +8,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface EndpointMapper {
     @Mapping(target = "description", ignore = true)
-    EndpointDTO toListDTO(EndpointEntity endpointDTO);
+    EndpointDTO toListDTO(EndpointEntity endpointEntity);
 
-    EndpointDTO toDetailDTO(EndpointEntity endpointDTO);
+    EndpointDTO toDetailDTO(EndpointEntity endpointEntity);
 }

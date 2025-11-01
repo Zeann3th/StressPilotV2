@@ -15,10 +15,10 @@ public class ParsedEndpointDTO {
     private String name;
     private String description;
     private String type;
+    private String url;
 
     // Http
     private String httpMethod;
-    private String httpUrl;
     private Map<String, String> httpHeaders;
     private Map<String, Object> httpBody;
     private Map<String, Object> httpParameters;
@@ -26,7 +26,7 @@ public class ParsedEndpointDTO {
     // gRPC
     private String grpcServiceName;
     private String grpcMethodName;
-    private String grpcProtoFile;
+    private String grpcStubPath;
 
     // GraphQL
     private String graphqlOperationType;

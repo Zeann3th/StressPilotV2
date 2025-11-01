@@ -32,6 +32,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -102,12 +103,18 @@ public class EndpointServiceImpl implements EndpointService {
         }
 
         ParserService parser;
-        if ("application/json".equals(contentType)) {
-            parser = parserServiceFactory.getParser("postman");
+        String type;
+        if ("application/json".equals(contentType) || Objects.requireNonNull(file.getOriginalFilename()).endsWith(".json")) {
+            type = "postman";
+        } else if (Objects.requireNonNull(file.getOriginalFilename()).endsWith(".proto")
+                || Objects.requireNonNull(file.getOriginalFilename()).endsWith(".pb")) {
+            type = "proto";
         } else {
             throw CommandExceptionBuilder.exception(ErrorCode.BAD_REQUEST,
                     Map.of(Constants.REASON, "Unsupported file type: " + contentType));
         }
+
+        parser = parserServiceFactory.getParser(type);
 
         try {
             String fileContent = new String(file.getBytes(), StandardCharsets.UTF_8);
@@ -132,14 +139,14 @@ public class EndpointServiceImpl implements EndpointService {
                     .type(parsedEndpointDTO.getType())
                     // HTTP
                     .httpMethod(parsedEndpointDTO.getHttpMethod())
-                    .url(parsedEndpointDTO.getHttpUrl())
+                    .url(parsedEndpointDTO.getUrl())
                     .httpHeaders(parsedEndpointDTO.getHttpHeaders() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpHeaders()) : null)
                     .httpBody(parsedEndpointDTO.getHttpBody() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpBody()) : null)
                     .httpParameters(parsedEndpointDTO.getHttpParameters() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getHttpParameters()) : null)
                     // gRPC
                     .grpcServiceName(parsedEndpointDTO.getGrpcServiceName())
                     .grpcMethodName(parsedEndpointDTO.getGrpcMethodName())
-                    .grpcProtoFile(parsedEndpointDTO.getGrpcProtoFile())
+                    .grpcStubPath(parsedEndpointDTO.getGrpcStubPath())
                     // GraphQL
                     .graphqlOperationType(parsedEndpointDTO.getGraphqlOperationType())
                     .graphqlVariables(parsedEndpointDTO.getGraphqlVariables() != null ? objectMapper.writeValueAsString(parsedEndpointDTO.getGraphqlVariables()) : null)

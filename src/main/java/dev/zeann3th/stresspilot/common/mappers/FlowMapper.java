@@ -8,7 +8,9 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring")
 public interface FlowMapper {
     @Mapping(target = "description", ignore = true)
+    @Mapping(target = "steps", ignore = true)
     FlowResponseDTO toListDTO(FlowEntity flowEntity);
 
+    @Mapping(target = "steps", ignore = true)
     FlowResponseDTO toDetailDTO(FlowEntity flowEntity);
 }

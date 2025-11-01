@@ -86,7 +86,7 @@ public class PostmanParser implements ParserService {
                 .description(item.path("description").asText(null))
                 .type(EndpointType.HTTP.name())
                 .httpMethod(request.path("method").asText())
-                .httpUrl(request.path("url").path("raw").asText())
+                .url(request.path("url").path("raw").asText())
                 .httpHeaders(headers.isEmpty() ? null : headers)
                 .httpParameters(templatedParameters)
                 .httpBody(templatedBody)

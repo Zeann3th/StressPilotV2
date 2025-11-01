@@ -52,8 +52,8 @@ public class EndpointEntity extends BaseEntity {
     @Column(name = "grpc_method_name")
     private String grpcMethodName;
 
-    @Column(name = "grpc_proto_file", columnDefinition = "TEXT")
-    private String grpcProtoFile;
+    @Column(name = "grpc_stub_path", columnDefinition = "TEXT")
+    private String grpcStubPath;
 
     // GraphQL
     @Column(name = "graphql_operation_type", columnDefinition = "VARCHAR(20)")

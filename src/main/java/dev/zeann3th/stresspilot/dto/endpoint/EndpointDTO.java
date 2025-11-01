@@ -14,10 +14,10 @@ public class EndpointDTO {
     private String name;
     private String description;
     private String type;
+    private String url;
 
     // HTTP
     private String httpMethod;
-    private String httpUrl;
     private String httpHeaders;
     private String httpBody;
     private String httpParameters;
@@ -25,7 +25,7 @@ public class EndpointDTO {
     // gRPC
     private String grpcServiceName;
     private String grpcMethodName;
-    private String grpcProtoFile;
+    private String grpcStubPath;
 
     // GraphQL
     private String graphqlOperationType;
